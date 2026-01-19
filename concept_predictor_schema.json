@@ -1,0 +1,213 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rileyseaburg/concept-first-codegen/concept_predictor_schema.json",
+  "title": "Concept Predictor GGUF Schema",
+  "description": "Schema for GGUF files containing concept_predictor architecture models",
+  "type": "object",
+  "required": ["metadata", "tensors"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": [
+        "general.architecture",
+        "general.name",
+        "concept_predictor.text_encoder",
+        "concept_predictor.text_dim",
+        "concept_predictor.concept_dim",
+        "concept_predictor.hidden_dim",
+        "concept_predictor.num_layers",
+        "concept_predictor.activation"
+      ],
+      "properties": {
+        "general.architecture": {
+          "type": "string",
+          "const": "concept_predictor",
+          "description": "Architecture identifier, must be 'concept_predictor'"
+        },
+        "general.name": {
+          "type": "string",
+          "description": "Human-readable model name"
+        },
+        "general.author": {
+          "type": "string",
+          "description": "Model author or organization"
+        },
+        "general.license": {
+          "type": "string",
+          "description": "SPDX license identifier"
+        },
+        "general.description": {
+          "type": "string",
+          "description": "Model description"
+        },
+        "general.url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Model homepage or repository URL"
+        },
+        "concept_predictor.text_encoder": {
+          "type": "string",
+          "description": "HuggingFace model ID for the required text encoder",
+          "examples": [
+            "Alibaba-NLP/gte-large-en-v1.5",
+            "BAAI/bge-large-en-v1.5",
+            "sentence-transformers/all-mpnet-base-v2"
+          ]
+        },
+        "concept_predictor.text_dim": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Input dimension (text embedding size)",
+          "examples": [768, 1024]
+        },
+        "concept_predictor.concept_dim": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Output dimension (concept embedding size)",
+          "examples": [128, 256, 512]
+        },
+        "concept_predictor.hidden_dim": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Hidden layer dimension",
+          "examples": [512, 1024, 2048]
+        },
+        "concept_predictor.num_layers": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of linear layers in the MLP"
+        },
+        "concept_predictor.activation": {
+          "type": "string",
+          "enum": ["gelu", "relu", "silu", "tanh"],
+          "description": "Activation function between layers"
+        },
+        "concept_predictor.quantization": {
+          "type": "string",
+          "enum": ["f32", "f16", "bf16", "q8_0", "q4_0", "q4_1"],
+          "default": "f32",
+          "description": "Weight quantization format"
+        },
+        "concept_predictor.dropout": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Dropout rate (for documentation, not used at inference)"
+        },
+        "concept_predictor.norm_type": {
+          "type": "string",
+          "enum": ["layernorm", "rmsnorm", "none"],
+          "default": "layernorm",
+          "description": "Normalization type used between layers"
+        }
+      }
+    },
+    "tensors": {
+      "type": "object",
+      "description": "Model weight tensors",
+      "required": [
+        "projector.0.weight",
+        "projector.0.bias",
+        "projector.8.weight",
+        "projector.8.bias"
+      ],
+      "properties": {
+        "projector.0.weight": {
+          "$ref": "#/$defs/tensor",
+          "description": "First linear layer weights [hidden_dim, text_dim]"
+        },
+        "projector.0.bias": {
+          "$ref": "#/$defs/tensor",
+          "description": "First linear layer bias [hidden_dim]"
+        },
+        "projector.2.weight": {
+          "$ref": "#/$defs/tensor",
+          "description": "First LayerNorm gamma [hidden_dim]"
+        },
+        "projector.2.bias": {
+          "$ref": "#/$defs/tensor",
+          "description": "First LayerNorm beta [hidden_dim]"
+        },
+        "projector.4.weight": {
+          "$ref": "#/$defs/tensor",
+          "description": "Second linear layer weights [hidden_dim, hidden_dim]"
+        },
+        "projector.4.bias": {
+          "$ref": "#/$defs/tensor",
+          "description": "Second linear layer bias [hidden_dim]"
+        },
+        "projector.6.weight": {
+          "$ref": "#/$defs/tensor",
+          "description": "Second LayerNorm gamma [hidden_dim]"
+        },
+        "projector.6.bias": {
+          "$ref": "#/$defs/tensor",
+          "description": "Second LayerNorm beta [hidden_dim]"
+        },
+        "projector.8.weight": {
+          "$ref": "#/$defs/tensor",
+          "description": "Output linear layer weights [concept_dim, hidden_dim]"
+        },
+        "projector.8.bias": {
+          "$ref": "#/$defs/tensor",
+          "description": "Output linear layer bias [concept_dim]"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "tensor": {
+      "type": "object",
+      "required": ["shape", "dtype"],
+      "properties": {
+        "shape": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "description": "Tensor dimensions"
+        },
+        "dtype": {
+          "type": "string",
+          "enum": ["f32", "f16", "bf16", "q8_0", "q4_0", "q4_1"],
+          "description": "Data type"
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Byte offset in tensor data section"
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "metadata": {
+        "general.architecture": "concept_predictor",
+        "general.name": "concept-first-codegen",
+        "general.author": "rileyseaburg",
+        "general.license": "MIT",
+        "concept_predictor.text_encoder": "Alibaba-NLP/gte-large-en-v1.5",
+        "concept_predictor.text_dim": 1024,
+        "concept_predictor.concept_dim": 256,
+        "concept_predictor.hidden_dim": 1024,
+        "concept_predictor.num_layers": 3,
+        "concept_predictor.activation": "gelu",
+        "concept_predictor.quantization": "f32"
+      },
+      "tensors": {
+        "projector.0.weight": {"shape": [1024, 1024], "dtype": "f32"},
+        "projector.0.bias": {"shape": [1024], "dtype": "f32"},
+        "projector.2.weight": {"shape": [1024], "dtype": "f32"},
+        "projector.2.bias": {"shape": [1024], "dtype": "f32"},
+        "projector.4.weight": {"shape": [1024, 1024], "dtype": "f32"},
+        "projector.4.bias": {"shape": [1024], "dtype": "f32"},
+        "projector.6.weight": {"shape": [1024], "dtype": "f32"},
+        "projector.6.bias": {"shape": [1024], "dtype": "f32"},
+        "projector.8.weight": {"shape": [256, 1024], "dtype": "f32"},
+        "projector.8.bias": {"shape": [256], "dtype": "f32"}
+      }
+    }
+  ]
+}

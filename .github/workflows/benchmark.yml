@@ -1,0 +1,154 @@
+name: Run Benchmarks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install jupyter nbconvert
+      
+      - name: Login to HuggingFace
+        env:
+          HUGGINGFACE_TOKEN: ${{ secrets.HUGGINGFACE_TOKEN }}
+        run: |
+          pip install huggingface_hub
+          huggingface-cli login --token $HUGGINGFACE_TOKEN
+      
+      - name: Run notebook benchmarks
+        env:
+          HUGGINGFACE_TOKEN: ${{ secrets.HUGGINGFACE_TOKEN }}
+          HF_TOKEN: ${{ secrets.HUGGINGFACE_TOKEN }}
+        run: |
+          jupyter nbconvert --to notebook --execute concept_first_codegen.ipynb --output executed_notebook.ipynb
+      
+      - name: Upload executed notebook
+        uses: actions/upload-artifact@v4
+        with:
+          name: executed-notebook
+          path: executed_notebook.ipynb
+      
+      - name: Upload model to HuggingFace Hub
+        env:
+          HUGGINGFACE_TOKEN: ${{ secrets.HUGGINGFACE_TOKEN }}
+          HF_TOKEN: ${{ secrets.HUGGINGFACE_TOKEN }}
+        run: |
+          python -c "
+          from huggingface_hub import HfApi, create_repo
+          import os
+          
+          api = HfApi()
+          repo_id = 'rileyseaburg/concept-first-codegen'
+          
+          # Create repo if it doesn't exist
+          try:
+              create_repo(repo_id, repo_type='model', exist_ok=True)
+          except Exception as e:
+              print(f'Repo creation note: {e}')
+          
+          # Upload the concept predictor checkpoint if it exists
+          checkpoints_dir = 'checkpoints'
+          if os.path.exists(checkpoints_dir):
+              for f in os.listdir(checkpoints_dir):
+                  if f.endswith('.pt') or f.endswith('.pth'):
+                      api.upload_file(
+                          path_or_fileobj=os.path.join(checkpoints_dir, f),
+                          path_in_repo=f'checkpoints/{f}',
+                          repo_id=repo_id,
+                          repo_type='model'
+                      )
+                      print(f'Uploaded {f}')
+          
+          # Upload concept bank if it exists
+          if os.path.exists('concept_bank.pt'):
+              api.upload_file(
+                  path_or_fileobj='concept_bank.pt',
+                  path_in_repo='concept_bank.pt',
+                  repo_id=repo_id,
+                  repo_type='model'
+              )
+              print('Uploaded concept_bank.pt')
+          
+          # Upload README
+          api.upload_file(
+              path_or_fileobj='README.md',
+              path_in_repo='README.md',
+              repo_id=repo_id,
+              repo_type='model'
+          )
+          print('Uploaded README.md')
+          
+          print(f'Model available at: https://huggingface.co/{repo_id}')
+          "
+      
+      - name: Export to GGUF
+        run: |
+          python -c "
+          import os
+          from concept_first.export_gguf import export_concept_predictor_gguf
+          
+          checkpoints_dir = 'checkpoints'
+          if os.path.exists(checkpoints_dir):
+              for f in os.listdir(checkpoints_dir):
+                  if f.endswith('.pt') or f.endswith('.pth'):
+                      pt_path = os.path.join(checkpoints_dir, f)
+                      gguf_path = pt_path.replace('.pt', '.gguf').replace('.pth', '.gguf')
+                      try:
+                          export_concept_predictor_gguf(pt_path, gguf_path)
+                          print(f'Exported {f} -> {os.path.basename(gguf_path)}')
+                      except Exception as e:
+                          print(f'Failed to export {f}: {e}')
+          else:
+              print('No checkpoints directory found')
+          "
+      
+      - name: Upload GGUF to HuggingFace
+        env:
+          HUGGINGFACE_TOKEN: ${{ secrets.HUGGINGFACE_TOKEN }}
+          HF_TOKEN: ${{ secrets.HUGGINGFACE_TOKEN }}
+        run: |
+          python -c "
+          from huggingface_hub import HfApi
+          import os
+          
+          api = HfApi()
+          repo_id = 'rileyseaburg/concept-first-codegen'
+          
+          # Upload GGUF files
+          checkpoints_dir = 'checkpoints'
+          if os.path.exists(checkpoints_dir):
+              for f in os.listdir(checkpoints_dir):
+                  if f.endswith('.gguf'):
+                      api.upload_file(
+                          path_or_fileobj=os.path.join(checkpoints_dir, f),
+                          path_in_repo=f'gguf/{f}',
+                          repo_id=repo_id,
+                          repo_type='model'
+                      )
+                      print(f'Uploaded GGUF: {f}')
+          "
+      
+      - name: Upload GGUF as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gguf-models
+          path: checkpoints/*.gguf
+          if-no-files-found: ignore

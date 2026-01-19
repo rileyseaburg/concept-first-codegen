@@ -31,7 +31,7 @@ class ConceptFirstGenerator:
         self,
         concept_predictor: ConceptPredictor,
         concept_bank: ConceptBank,
-        llm_name: str = "Qwen/Qwen2.5-Coder-7B-Instruct",
+        llm_name: str = "Qwen/Qwen3-Coder-30B-A3B-Instruct",
         num_examples: int = 3,
         use_4bit: bool = True,
         device: str = None
@@ -44,7 +44,8 @@ class ConceptFirstGenerator:
             concept_bank: ConceptBank with code examples
             llm_name: HuggingFace model for code generation.
                 Options:
-                - "Qwen/Qwen2.5-Coder-7B-Instruct" (best quality)
+                - "Qwen/Qwen3-Coder-30B-A3B-Instruct" (best, MoE 3B active)
+                - "Qwen/Qwen2.5-Coder-7B-Instruct" (good quality)
                 - "Qwen/Qwen2.5-Coder-3B-Instruct" (faster)
                 - "Qwen/Qwen2.5-Coder-1.5B-Instruct" (fastest)
             num_examples: Number of examples to retrieve

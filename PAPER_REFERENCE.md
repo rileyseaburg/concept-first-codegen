@@ -7,7 +7,7 @@ This project is inspired by **VL-JEPA: Joint Embedding Predictive Architecture f
 - **Title**: VL-JEPA: Joint Embedding Predictive Architecture for Vision-language
 - **Authors**: Delong Chen, Mustafa Shukor, Théo Moutakanni, Willy Chung, Jade Yu, Tejaswi Kasarla, Allen Bolourchi, Yann LeCun, Pascale Fung
 - **Affiliations**: Meta FAIR, HKUST, Sorbonne Université, NYU
-- **arXiv**: [2412.10942](https://arxiv.org/abs/2412.10942)
+- **arXiv**: [2512.10942](https://arxiv.org/abs/2512.10942)
 - **Date**: December 11, 2025
 - **License**: CC BY 4.0
 
@@ -106,7 +106,7 @@ This pulls query embeddings toward their corresponding code embeddings while pus
   title={VL-JEPA: Joint Embedding Predictive Architecture for Vision-Language},
   author={Chen, Delong and Shukor, Mustafa and Moutakanni, Théo and Chung, Willy and 
           Yu, Jade and Kasarla, Tejaswi and Bolourchi, Allen and LeCun, Yann and Fung, Pascale},
-  journal={arXiv preprint arXiv:2412.10942},
+  journal={arXiv preprint arXiv:2512.10942},
   year={2024}
 }
 ```

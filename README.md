@@ -1,6 +1,6 @@
 # Concept-First Code Generation
 
-**Predict the "bigger picture" before generating code** - inspired by [VL-JEPA](https://arxiv.org/abs/2412.10942) (Meta FAIR, Dec 2025).
+**Predict the "bigger picture" before generating code** - inspired by [VL-JEPA](https://arxiv.org/abs/2512.10942) (Meta FAIR, Dec 2025).
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/rileyseaburg/concept-first-codegen/blob/main/concept_first_codegen.ipynb)
 
@@ -51,7 +51,7 @@ def fibonacci(n):
 
 ## Why This Works (VL-JEPA Insight)
 
-From the [VL-JEPA paper](https://arxiv.org/abs/2412.10942):
+From the [VL-JEPA paper](https://arxiv.org/abs/2512.10942):
 
 > "By learning in an abstract representation space, the model focuses on task-relevant semantics while abstracting away surface-level linguistic variability."
 
@@ -82,7 +82,15 @@ The embedding space is **smoother** - similar concepts map to nearby points, mak
 | **Concept Encoder** | [CodeT5+ 110M](https://huggingface.co/Salesforce/codet5p-110m-embedding) | Encode code → embeddings |
 | **Concept Predictor** | GTE-Large + MLP | Query → predicted embedding |
 | **Concept Bank** | FAISS index | Store & retrieve code patterns |
-| **Code Generator** | [Qwen2.5-Coder-7B](https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct) | Generate with context |
+| **Code Generator** | [Qwen3-Coder-30B-A3B](https://huggingface.co/Qwen/Qwen3-Coder-30B-A3B-Instruct) | Generate with context |
+
+### Why Qwen3-Coder?
+
+The latest **Qwen3-Coder** (July 2025) is a Mixture-of-Experts model with:
+- **30B total params, 3B active** - Efficient inference
+- **128 experts, 8 activated** - Specialized knowledge routing
+- **256K context** (1M with YaRN) - Repo-scale understanding
+- **Native tool/function calling** - Built for agentic coding
 
 ### Training
 
@@ -194,7 +202,7 @@ Total: **1,320 code concepts** with descriptions
   title={VL-JEPA: Joint Embedding Predictive Architecture for Vision-Language},
   author={Chen, Delong and Shukor, Mustafa and Moutakanni, Théo and Chung, Willy and 
           Yu, Jade and Kasarla, Tejaswi and Bolourchi, Allen and LeCun, Yann and Fung, Pascale},
-  journal={arXiv preprint arXiv:2412.10942},
+  journal={arXiv preprint arXiv:2512.10942},
   year={2024}
 }
 ```
@@ -260,7 +268,7 @@ And the VL-JEPA paper that inspired this approach:
   title={VL-JEPA: Joint Embedding Predictive Architecture for Vision-Language},
   author={Chen, Delong and Shukor, Mustafa and Moutakanni, Théo and Chung, Willy and 
           Yu, Jade and Kasarla, Tejaswi and Bolourchi, Allen and LeCun, Yann and Fung, Pascale},
-  journal={arXiv preprint arXiv:2412.10942},
+  journal={arXiv preprint arXiv:2512.10942},
   year={2024}
 }
 ```
