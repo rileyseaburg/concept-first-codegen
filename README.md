@@ -153,6 +153,26 @@ Recursive functions cluster together (0.688), iterative algorithms form another 
 
 Requires: A100 (40GB) or T4 (16GB with 4-bit quantization)
 
+### Low VRAM? Use AirLLM (4GB GPU!)
+
+Run Qwen3-Coder-30B on just **4GB VRAM** using [AirLLM](https://github.com/lyogavin/airllm):
+
+```bash
+pip install airllm
+```
+
+```python
+from airllm import AutoModel
+
+# AirLLM loads one layer at a time - fits 70B models on 4GB!
+model = AutoModel.from_pretrained(
+    "Qwen/Qwen3-Coder-30B-A3B-Instruct",
+    compression="4bit"  # 3x faster inference
+)
+```
+
+See `examples/airllm_low_vram.py` for full integration with concept-first pipeline.
+
 ### Local Installation
 
 ```bash
